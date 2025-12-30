@@ -2,8 +2,8 @@
 node_modules/
 client/node_modules/
 
-# Production
-client/build/
+# Production (keep build for free tier deployment)
+# client/build/
 
 # Uploads
 uploads/
