@@ -104,12 +104,6 @@ const Login = ({ onLogin }) => {
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
-
-          <Box sx={{ mt: 3, textAlign: 'center' }}>
-            <Typography variant="caption" color="text.secondary">
-              Default credentials: admin / admin123
-            </Typography>
-          </Box>
         </Paper>
       </Box>
     </Container>
