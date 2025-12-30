@@ -111,7 +111,51 @@ REACT_APP_API_URL=http://your-domain-or-ip
 
 ## Step 4: Build and Run with Docker
 
-### Build and start the containers:
+### Option A: Automated Deployment (Recommended)
+
+Use the automated deployment script that performs all checks:
+
+```bash
+# Make the script executable
+chmod +x deploy.sh
+
+# Run the deployment script
+./deploy.sh
+```
+
+The script will:
+- ✅ Check Docker and Docker Compose installation
+- ✅ Verify disk space and system requirements
+- ✅ Validate environment configuration
+- ✅ Create missing environment files
+- ✅ Build and start containers
+- ✅ Perform health checks
+- ✅ Display deployment summary
+- 🐛 Show debug console if errors occur
+
+**Other useful scripts:**
+
+```bash
+# Quick deployment (after initial setup)
+chmod +x quick-deploy.sh
+./quick-deploy.sh
+
+# System diagnostics
+chmod +x diagnostics.sh
+./diagnostics.sh
+
+# Create backup
+chmod +x backup.sh
+./backup.sh
+
+# Rollback to previous version
+chmod +x rollback.sh
+./rollback.sh
+```
+
+### Option B: Manual Deployment
+
+Build and start the containers manually:
 ```bash
 # Build and start in detached mode
 docker-compose up -d --build
