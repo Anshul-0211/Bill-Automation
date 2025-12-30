@@ -5,7 +5,7 @@ client/node_modules/
 # Production (keep build for free tier deployment)
 # client/build/
 
-# Uploads
+#uploads
 uploads/
 
 # Environment variables
