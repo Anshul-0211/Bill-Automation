@@ -5,7 +5,8 @@ import App from './App';
 import axios from 'axios';
 
 // Configure axios defaults
-axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+// Use empty string for baseURL so requests go to same origin (nginx will proxy /api to backend)
+axios.defaults.baseURL = '';
 axios.defaults.withCredentials = true;
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
