@@ -24,7 +24,7 @@ import {
   CardContent,
   Divider
 } from '@mui/material';
-import { Add as AddIcon, Delete as DeleteIcon, Download as DownloadIcon } from '@mui/icons-material';
+import { Add as AddIcon, Delete as DeleteIcon, Download as DownloadIcon, CalendarMonth as CalendarIcon } from '@mui/icons-material';
 import axios from 'axios';
 import { format } from 'date-fns';
 
@@ -81,6 +81,20 @@ const BillGenerator = () => {
     }
   };
 
+  // Convert DD/MM/YYYY to YYYY-MM-DD for date input
+  const toDateInputFormat = (ddmmyyyy) => {
+    if (!ddmmyyyy || ddmmyyyy.length < 10) return '';
+    const [day, month, year] = ddmmyyyy.split('/');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Convert YYYY-MM-DD to DD/MM/YYYY
+  const fromDateInputFormat = (yyyymmdd) => {
+    if (!yyyymmdd) return '';
+    const [year, month, day] = yyyymmdd.split('-');
+    return `${day}/${month}/${year}`;
+  };
+
   useEffect(() => {
     fetchCustomers();
     fetchLastBillInfo();
@@ -122,10 +136,22 @@ const BillGenerator = () => {
   };
 
   const handleBillDataChange = (field, value) => {
-    setBillData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setBillData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value
+      };
+      
+      // If bill date changes, update all LR dates to match
+      if (field === 'billDate') {
+        newData.items = prev.items.map(item => ({
+          ...item,
+          lrDate: value
+        }));
+      }
+      
+      return newData;
+    });
   };
 
   const handleItemChange = (index, field, value) => {
@@ -158,7 +184,7 @@ const BillGenerator = () => {
     setBillData(prev => ({
       ...prev,
       items: [...prev.items, {
-        lrDate: '',
+        lrDate: prev.billDate, // Use current bill date as default
         lrNo: '',
         vehicleNo: vehicleNo, // Copy from first row
         fromLocation: '',
@@ -314,10 +340,10 @@ const BillGenerator = () => {
           <TextField
             fullWidth
             label="Bill Date"
-            value={billData.billDate}
-            onChange={(e) => handleBillDataChange('billDate', formatDateInput(e.target.value))}
-            placeholder="DD/MM/YYYY"
-            inputProps={{ maxLength: 10 }}
+            type="date"
+            value={toDateInputFormat(billData.billDate)}
+            onChange={(e) => handleBillDataChange('billDate', fromDateInputFormat(e.target.value))}
+            InputLabelProps={{ shrink: true }}
           />
         </Grid>
         <Grid item xs={12} md={4}>
@@ -411,22 +437,22 @@ const BillGenerator = () => {
           {/* Desktop View - Table */}
           {!isMobile && (
             <TableContainer>
-              <Table size="small">
+              <Table size="small" sx={{ '& .MuiTableCell-root': { padding: '4px 8px' } }}>
                 <TableHead>
                   <TableRow>
-                    <TableCell>LR Date</TableCell>
-                    <TableCell>LR No.</TableCell>
-                    <TableCell>Vehicle No.</TableCell>
-                    <TableCell>From</TableCell>
-                    <TableCell>To</TableCell>
-                    <TableCell>Freight</TableCell>
+                    <TableCell sx={{ minWidth: '140px' }}>LR Date</TableCell>
+                    <TableCell sx={{ minWidth: '100px' }}>LR No.</TableCell>
+                    <TableCell sx={{ minWidth: '120px' }}>Vehicle No.</TableCell>
+                    <TableCell sx={{ minWidth: '100px' }}>From</TableCell>
+                    <TableCell sx={{ minWidth: '100px' }}>To</TableCell>
+                    <TableCell sx={{ minWidth: '90px' }}>Freight</TableCell>
                     {/* <TableCell>Document</TableCell> */}
-                    <TableCell>Loading</TableCell>
+                    <TableCell sx={{ minWidth: '90px' }}>Loading</TableCell>
                     {/* <TableCell>Door Delivery</TableCell> */}
-                    <TableCell>Halting</TableCell>
-                    <TableCell>Other</TableCell>
-                    <TableCell>Amount</TableCell>
-                    {/* <TableCell>Action</TableCell> */}
+                    <TableCell sx={{ minWidth: '90px' }}>Halting</TableCell>
+                    <TableCell sx={{ minWidth: '80px' }}>Other</TableCell>
+                    <TableCell sx={{ minWidth: '90px' }}>Amount</TableCell>
+                    <TableCell sx={{ width: '50px' }}>Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -435,10 +461,13 @@ const BillGenerator = () => {
                       <TableCell>
                         <TextField
                           size="small"
-                          value={item.lrDate}
-                          onChange={(e) => handleItemChange(index, 'lrDate', formatDateInput(e.target.value))}
-                          placeholder="DD/MM/YYYY"
-                          inputProps={{ maxLength: 10 }}
+                          type="date"
+                          value={toDateInputFormat(item.lrDate)}
+                          onChange={(e) => handleItemChange(index, 'lrDate', fromDateInputFormat(e.target.value))}
+                          InputProps={{
+                            sx: { fontSize: '0.875rem' }
+                          }}
+                          sx={{ minWidth: '140px' }}
                         />
                       </TableCell>
                       <TableCell>
@@ -446,6 +475,7 @@ const BillGenerator = () => {
                           size="small"
                           value={item.lrNo}
                           onChange={(e) => handleItemChange(index, 'lrNo', e.target.value)}
+                          InputProps={{ sx: { fontSize: '0.875rem' } }}
                         />
                       </TableCell>
                       <TableCell>
@@ -453,6 +483,7 @@ const BillGenerator = () => {
                           size="small"
                           value={item.vehicleNo}
                           onChange={(e) => handleItemChange(index, 'vehicleNo', e.target.value)}
+                          InputProps={{ sx: { fontSize: '0.875rem' } }}
                         />
                       </TableCell>
                       <TableCell>
@@ -460,6 +491,7 @@ const BillGenerator = () => {
                           size="small"
                           value={item.fromLocation}
                           onChange={(e) => handleItemChange(index, 'fromLocation', e.target.value)}
+                          InputProps={{ sx: { fontSize: '0.875rem' } }}
                         />
                       </TableCell>
                       <TableCell>
@@ -467,41 +499,46 @@ const BillGenerator = () => {
                           size="small"
                           value={item.toLocation}
                           onChange={(e) => handleItemChange(index, 'toLocation', e.target.value)}
+                          InputProps={{ sx: { fontSize: '0.875rem' } }}
                         />
                       </TableCell>
                       <TableCell>
                         <TextField
                           size="small"
-                          type="number"
+                          type="text"
                           value={item.freightCharge}
                           onChange={(e) => handleItemChange(index, 'freightCharge', e.target.value)}
+                          InputProps={{ sx: { fontSize: '0.875rem' } }}
                         />
                       </TableCell>
                       <TableCell>
                         <TextField
                           size="small"
-                          type="number"
+                          type="text"
                           value={item.loadingCharges}
                           onChange={(e) => handleItemChange(index, 'loadingCharges', e.target.value)}
+                          InputProps={{ sx: { fontSize: '0.875rem' } }}
                         />
                       </TableCell>
                       <TableCell>
                         <TextField
                           size="small"
-                          type="number"
+                          type="text"
                           value={item.haltingCharges}
                           onChange={(e) => handleItemChange(index, 'haltingCharges', e.target.value)}
+                          InputProps={{ sx: { fontSize: '0.875rem' } }}
                         />
                       </TableCell>
                       <TableCell>
                         <TextField
                           size="small"
-                          type="number"
+                          type="text"
                           value={item.otherCharges}
                           onChange={(e) => handleItemChange(index, 'otherCharges', e.target.value)}
+                          InputProps={{ sx: { fontSize: '0.875rem' } }}
                         />
                       </TableCell>
-                      <TableCell>{item.amount}</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold' }}>{item.amount}</TableCell>
                       <TableCell>
                         <IconButton
                           size="small"
@@ -545,10 +582,10 @@ const BillGenerator = () => {
                           fullWidth
                           size="small"
                           label="LR Date"
-                          value={item.lrDate}
-                          onChange={(e) => handleItemChange(index, 'lrDate', formatDateInput(e.target.value))}
-                          placeholder="DD/MM/YYYY"
-                          inputProps={{ maxLength: 10 }}
+                          type="date"
+                          value={toDateInputFormat(item.lrDate)}
+                          onChange={(e) => handleItemChange(index, 'lrDate', fromDateInputFormat(e.target.value))}
+                          InputLabelProps={{ shrink: true }}
                         />
                       </Grid>
                       <Grid item xs={6}>
@@ -597,7 +634,7 @@ const BillGenerator = () => {
                           fullWidth
                           size="small"
                           label="Freight Charge"
-                          type="number"
+                          type="text"
                           value={item.freightCharge}
                           onChange={(e) => handleItemChange(index, 'freightCharge', e.target.value)}
                         />
@@ -607,7 +644,7 @@ const BillGenerator = () => {
                           fullWidth
                           size="small"
                           label="Loading Charges"
-                          type="number"
+                          type="text"
                           value={item.loadingCharges}
                           onChange={(e) => handleItemChange(index, 'loadingCharges', e.target.value)}
                         />
@@ -617,7 +654,7 @@ const BillGenerator = () => {
                           fullWidth
                           size="small"
                           label="Halting Charges"
-                          type="number"
+                          type="text"
                           value={item.haltingCharges}
                           onChange={(e) => handleItemChange(index, 'haltingCharges', e.target.value)}
                         />
@@ -627,7 +664,7 @@ const BillGenerator = () => {
                           fullWidth
                           size="small"
                           label="Other Charges"
-                          type="number"
+                          type="text"
                           value={item.otherCharges}
                           onChange={(e) => handleItemChange(index, 'otherCharges', e.target.value)}
                         />
