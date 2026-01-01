@@ -4,7 +4,7 @@ client/node_modules/
 
 # Production (keep build for free tier deployment)
 # client/build/
-
+server/bills.db
 
 # Environment variables
 .env
