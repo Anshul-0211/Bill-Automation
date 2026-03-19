@@ -1,0 +1,55 @@
+[0;34mℹ Starting deployment at Tue Dec 30 07:16:21 UTC 2025[0m
+[0;34mℹ Log file: deployment_20251230_071621.log[0m
+[0;34mℹ Checking Docker installation...[0m
+[0;32m✓ Docker is installed (Docker version 28.2.2, build 28.2.2-0ubuntu1~24.04.1)[0m
+[0;34mℹ Checking Docker service...[0m
+[0;32m✓ Docker service is running[0m
+[0;34mℹ Checking Docker Compose installation...[0m
+[0;32m✓ Docker Compose is installed (Docker Compose version v5.0.1)[0m
+[0;34mℹ Checking Docker permissions...[0m
+[0;32m✓ Docker permissions verified[0m
+[0;34mℹ Checking disk space...[0m
+[0;32m✓ Sufficient disk space: 5GB available[0m
+[0;34mℹ Checking project directory...[0m
+[0;32m✓ Project directory verified[0m
+[0;34mℹ Checking backend environment file...[0m
+[0;32m✓ Backend environment file exists[0m
+[0;34mℹ Validating backend environment...[0m
+[1;33m⚠ SESSION_SECRET not configured properly![0m
+[0;34mℹ Update SESSION_SECRET in server/.env with a secure random string[0m
+[0;32m✓ Backend environment validated[0m
+[0;34mℹ Checking frontend environment file...[0m
+[0;32m✓ Frontend environment file exists[0m
+[0;34mℹ Checking for running containers...[0m
+[0;32m✓ No running containers found[0m
+[0;34mℹ Building Docker images (this may take several minutes)...[0m
+time="2025-12-30T07:16:22Z" level=warning msg="/home/ubuntu/Bill-Automation/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+time="2025-12-30T07:16:22Z" level=warning msg="Docker Compose requires buildx plugin to be installed"
+ Image bill-automation-backend Building 
+ Image bill-automation-backend Building 
+Sending build context to Docker daemon  9.547kB
+Step 1/9 : FROM node:18-alpine
+ ---> ee77c6cd7c18
+Step 2/9 : WORKDIR /app
+ ---> Using cache
+ ---> 851f686a9561
+Step 3/9 : COPY package*.json ./
+COPY failed: no source files were specified
+[0;32m✓ Docker images built successfully[0m
+[0;34mℹ Starting containers...[0m
+time="2025-12-30T07:16:22Z" level=warning msg="/home/ubuntu/Bill-Automation/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+time="2025-12-30T07:16:22Z" level=warning msg="Docker Compose requires buildx plugin to be installed"
+ Image bill-automation-backend Building 
+ Image bill-automation-backend Building 
+Sending build context to Docker daemon  9.547kB
+Step 1/9 : FROM node:18-alpine
+ ---> ee77c6cd7c18
+Step 2/9 : WORKDIR /app
+ ---> Using cache
+ ---> 851f686a9561
+Step 3/9 : COPY package*.json ./
+COPY failed: no source files were specified
+[0;32m✓ Containers started[0m
+[0;34mℹ Waiting for containers to be ready (30 seconds)...[0m
+[0;34mℹ Checking container status...[0m
+[0;31m✗ Backend container is not running (Status: not found)[0m
