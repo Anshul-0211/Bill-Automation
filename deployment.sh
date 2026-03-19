@@ -86,8 +86,8 @@ npm install
 print_success "Frontend dependencies installed"
 
 print_step "Building React application..."
-npm run build
-print_success "React build completed"
+print_info "Skipping build - using pre-built frontend from git..."
+print_success "Frontend already built"
 
 cd $PROJECT_DIR
 
