@@ -412,167 +412,215 @@ app.post('/api/generate-bill', isAuthenticated, async (req, res) => {
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=bill-${billData.billNo}.pdf`);
 
-    // ===============================
-    // CUSTOMER + BILL DETAILS SECTION
-    // ===============================
+    doc.pipe(res);
+
+    // Top border
+    doc.rect(40, 40, 515, 750).stroke();
+
+    // Header - Left side
+    doc.fontSize(18).font('Helvetica-Bold').text(companyInfo.name, 50, 50);
+    doc.fontSize(8).font('Helvetica');
+    doc.text(companyInfo.ward, 50, 72);
+    doc.text(companyInfo.district, 50, 82);
+    doc.text(companyInfo.state, 50, 92);
+    doc.text(companyInfo.pinCode, 50, 102);
+    doc.text(`GSTIN - ${companyInfo.gstin}`, 50, 112);
+    doc.text(`Pan No. - ${companyInfo.pan}`, 50, 122);
+    doc.text(`Email Id - ${companyInfo.email}`, 50, 132);
+
+    // Header - Right side (Bill Of Supply or Tax Invoice based on GST type)
+    const headerText = (billData.gstType === 'nogst') ? 'Bill Of Supply' : 'Tax Invoice';
+    doc.fontSize(16).font('Helvetica-Bold').text(headerText, 380, 50);
+
+    // Horizontal line after header
+    doc.moveTo(40, 150).lineTo(555, 150).stroke();
+
+    // =========================================
+    // DYNAMIC CUSTOMER + BILL DETAILS SECTION
+    // =========================================
 
     const detailsBoxTop = 155;
+
     const leftStartX = 50;
     const leftValueX = 135;
 
     const rightStartX = 310;
     const rightValueX = 430;
 
-    // Track dynamic Y for left side
+    // LEFT SIDE
     let leftY = detailsBoxTop + 10;
 
     doc.fontSize(8);
 
-    // CUSTOMER NAME
-    doc.font('Helvetica-Bold').text('Customer Name:', leftStartX, leftY);
+    // Customer Name
+    doc.font('Helvetica-Bold')
+      .text('Customer Name:', leftStartX, leftY);
 
-    doc.font('Helvetica').text(
-      billData.customer.name || '',
-      leftValueX,
-      leftY,
-      {
-        width: 145,
-        lineGap: 2
-      }
-    );
+    doc.font('Helvetica')
+      .text(
+        billData.customer.name || '',
+        leftValueX,
+        leftY,
+        {
+          width: 145,
+          lineGap: 2
+        }
+      );
 
     leftY = doc.y + 8;
 
     // GSTIN
-    doc.font('Helvetica-Bold').text('Customer GSTIN:', leftStartX, leftY);
+    doc.font('Helvetica-Bold')
+      .text('Customer GSTIN:', leftStartX, leftY);
 
-    doc.font('Helvetica').text(
-      billData.customer.gstin || '',
-      leftValueX,
-      leftY,
-      {
-        width: 145
-      }
-    );
-
-    leftY = doc.y + 8;
-
-    // ADDRESS
-    doc.font('Helvetica-Bold').text('Address:', leftStartX, leftY);
-
-    doc.font('Helvetica').text(
-      billData.customer.address || '',
-      leftValueX,
-      leftY,
-      {
-        width: 145,
-        lineGap: 2
-      }
-    );
+    doc.font('Helvetica')
+      .text(
+        billData.customer.gstin || '',
+        leftValueX,
+        leftY,
+        {
+          width: 145
+        }
+      );
 
     leftY = doc.y + 8;
 
-    // CONTACT PERSON
-    doc.font('Helvetica-Bold').text('Contact Person:', leftStartX, leftY);
+    // Address
+    doc.font('Helvetica-Bold')
+      .text('Address:', leftStartX, leftY);
 
-    doc.font('Helvetica').text(
-      billData.customer.contactPerson || '',
-      leftValueX,
-      leftY,
-      {
-        width: 145
-      }
-    );
-
-    leftY = doc.y + 8;
-
-    // CONTACT NO
-    doc.font('Helvetica-Bold').text('Contact No:', leftStartX, leftY);
-
-    doc.font('Helvetica').text(
-      billData.customer.contactNo || '',
-      leftValueX,
-      leftY,
-      {
-        width: 145
-      }
-    );
+    doc.font('Helvetica')
+      .text(
+        billData.customer.address || '',
+        leftValueX,
+        leftY,
+        {
+          width: 145,
+          lineGap: 2
+        }
+      );
 
     leftY = doc.y + 8;
 
-    // ===============================
-    // RIGHT SIDE BILL DETAILS
-    // ===============================
+    // Contact Person
+    doc.font('Helvetica-Bold')
+      .text('Contact Person:', leftStartX, leftY);
+
+    doc.font('Helvetica')
+      .text(
+        billData.customer.contactPerson || '',
+        leftValueX,
+        leftY,
+        {
+          width: 145
+        }
+      );
+
+    leftY = doc.y + 8;
+
+    // Contact No
+    doc.font('Helvetica-Bold')
+      .text('Contact No:', leftStartX, leftY);
+
+    doc.font('Helvetica')
+      .text(
+        billData.customer.contactNo || '',
+        leftValueX,
+        leftY,
+        {
+          width: 145
+        }
+      );
+
+    leftY = doc.y + 8;
+
+    // =========================================
+    // RIGHT SIDE - BILL DETAILS
+    // =========================================
 
     let rightY = detailsBoxTop + 10;
 
-    doc.font('Helvetica-Bold').text('Bill No:', rightStartX, rightY);
-    doc.font('Helvetica').text(
-      billData.billNo || '',
-      rightValueX,
-      rightY,
-      { width: 110 }
-    );
+    doc.font('Helvetica-Bold')
+      .text('Bill No:', rightStartX, rightY);
+
+    doc.font('Helvetica')
+      .text(
+        billData.billNo || '',
+        rightValueX,
+        rightY,
+        {
+          width: 110
+        }
+      );
 
     rightY += 16;
 
-    doc.font('Helvetica-Bold').text('Bill Date:', rightStartX, rightY);
-    doc.font('Helvetica').text(
-      billData.billDate || '',
-      rightValueX,
-      rightY,
-      { width: 110 }
-    );
+    doc.font('Helvetica-Bold')
+      .text('Bill Date:', rightStartX, rightY);
+
+    doc.font('Helvetica')
+      .text(
+        billData.billDate || '',
+        rightValueX,
+        rightY,
+        {
+          width: 110
+        }
+      );
 
     rightY += 16;
 
-    doc.font('Helvetica-Bold').text('Contact Person:', rightStartX, rightY);
+    doc.font('Helvetica-Bold')
+      .text('Contact Person:', rightStartX, rightY);
 
-    doc.font('Helvetica').text(
-      companyInfo.contactPerson || '',
-      rightValueX,
-      rightY,
-      {
-        width: 110,
-        lineGap: 2
-      }
-    );
-
-    rightY = doc.y + 8;
-
-    doc.font('Helvetica-Bold').text('Contact No:', rightStartX, rightY);
-
-    doc.font('Helvetica').text(
-      companyInfo.contactNo || '',
-      rightValueX,
-      rightY,
-      {
-        width: 110
-      }
-    );
+    doc.font('Helvetica')
+      .text(
+        companyInfo.contactPerson || '',
+        rightValueX,
+        rightY,
+        {
+          width: 110,
+          lineGap: 2
+        }
+      );
 
     rightY = doc.y + 8;
 
-    // ===============================
-    // CALCULATE DYNAMIC BOX HEIGHT
-    // ===============================
+    doc.font('Helvetica-Bold')
+      .text('Contact No:', rightStartX, rightY);
 
-    const dynamicContentBottom = Math.max(leftY, rightY);
+    doc.font('Helvetica')
+      .text(
+        companyInfo.contactNo || '',
+        rightValueX,
+        rightY,
+        {
+          width: 110
+        }
+      );
+
+    rightY = doc.y + 8;
+
+    // =========================================
+    // CALCULATE DYNAMIC HEIGHT
+    // =========================================
+
+    const contentBottom = Math.max(leftY, rightY);
 
     const detailsBoxHeight =
-      dynamicContentBottom - detailsBoxTop + 10;
+      contentBottom - detailsBoxTop + 10;
 
-    // OUTER BOX
+    // DRAW BOX
     doc.rect(40, detailsBoxTop, 515, detailsBoxHeight).stroke();
 
-    // MIDDLE DIVIDER
+    // CENTER DIVIDER
     doc.moveTo(297.5, detailsBoxTop)
       .lineTo(297.5, detailsBoxTop + detailsBoxHeight)
       .stroke();
 
-    // ===============================
-    // BOTTOM ROW
-    // ===============================
+    // =========================================
+    // BOTTOM TAX ROW
+    // =========================================
 
     const bottomRowY = detailsBoxTop + detailsBoxHeight;
 
@@ -602,11 +650,283 @@ app.post('/api/generate-bill', isAuthenticated, async (req, res) => {
         bottomRowY + 6
       );
 
-    // ===============================
-    // TABLE STARTS DYNAMICALLY
-    // ===============================
+    // =========================================
+    // TABLE
+    // =========================================
 
     const tableTop = bottomRowY + 40;
+
+    const tableHeaders = [
+      { text: 'Sr.', width: 20 },
+      { text: 'LR Date', width: 40 },
+      { text: 'LR No.', width: 35 },
+      { text: 'Vehicle No.', width: 47 },
+      { text: 'From Location', width: 50 },
+      { text: 'To Location', width: 50 },
+      { text: 'Freight Charge in Rs.', width: 42 },
+      { text: 'Document Charges', width: 37 },
+      { text: 'Loading / Unloading Charges', width: 42 },
+      { text: 'Door Delivery Charges', width: 37 },
+      { text: 'Halting Charges', width: 32 },
+      { text: 'Other Charges (Rs.)', width: 32 },
+      { text: 'Amount (Rs.)', width: 51 }
+    ];
+
+    // TABLE HEADER
+    doc.rect(40, tableTop, 515, 35).stroke();
+
+    let xPos = 40;
+
+    doc.fontSize(6).font('Helvetica-Bold');
+
+    tableHeaders.forEach((header) => {
+      doc.moveTo(xPos, tableTop)
+        .lineTo(xPos, tableTop + 35)
+        .stroke();
+
+      doc.text(
+        header.text,
+        xPos + 1,
+        tableTop + 12,
+        {
+          width: header.width - 2,
+          align: 'center',
+          lineGap: 1
+        }
+      );
+
+      xPos += header.width;
+    });
+
+    doc.moveTo(xPos, tableTop)
+      .lineTo(xPos, tableTop + 35)
+      .stroke();
+
+    // =========================================
+    // TABLE ROWS
+    // =========================================
+
+    let yPos = tableTop + 35;
+
+    doc.font('Helvetica').fontSize(7);
+
+    const rowHeight = 22;
+
+    billData.items.forEach((item, index) => {
+
+      xPos = 40;
+
+      const rowData = [
+        { text: (index + 1).toString(), width: 20 },
+        { text: item.lrDate || '', width: 40 },
+        { text: item.lrNo || '', width: 35 },
+        { text: item.vehicleNo || '', width: 47 },
+        { text: item.fromLocation || '', width: 50 },
+        { text: item.toLocation || '', width: 50 },
+        { text: item.freightCharge || '', width: 42 },
+        { text: item.documentCharges || '0', width: 37 },
+        { text: item.loadingCharges || '0', width: 42 },
+        { text: item.doorDeliveryCharges || '0', width: 37 },
+        { text: item.haltingCharges || '0', width: 32 },
+        { text: item.otherCharges || '0', width: 32 },
+        { text: item.amount || '', width: 51 }
+      ];
+
+      doc.rect(40, yPos, 515, rowHeight).stroke();
+
+      rowData.forEach((data) => {
+
+        doc.moveTo(xPos, yPos)
+          .lineTo(xPos, yPos + rowHeight)
+          .stroke();
+
+        doc.text(
+          data.text,
+          xPos + 1,
+          yPos + 7,
+          {
+            width: data.width - 2,
+            align: 'center'
+          }
+        );
+
+        xPos += data.width;
+      });
+
+      doc.moveTo(xPos, yPos)
+        .lineTo(xPos, yPos + rowHeight)
+        .stroke();
+
+      yPos += rowHeight;
+    });
+
+    // =========================================
+    // REMARKS
+    // =========================================
+
+    const remarksHeight = 24;
+
+    doc.rect(40, yPos, 515, remarksHeight).stroke();
+
+    doc.fontSize(8).font('Helvetica-Bold');
+
+    doc.text('Remarks:-', 45, yPos + 7);
+
+    doc.font('Helvetica')
+      .text(
+        billData.remarks || '',
+        100,
+        yPos + 7,
+        {
+          width: 430
+        }
+      );
+
+    yPos += remarksHeight;
+
+    // =========================================
+    // TOTALS TABLE
+    // =========================================
+
+    const taxTableLeft = 360;
+    const taxTableWidth = 195;
+    const taxRowHeight = 18;
+
+    const taxRows = [
+      ['Total taxable value of supply', billData.totals.taxableValue],
+      ['SGST @ 9%', billData.totals.sgst || 0],
+      ['CGST @ 9%', billData.totals.cgst || 0],
+      ['IGST @ 18%', billData.totals.igst || 0]
+    ];
+
+    doc.fontSize(9).font('Helvetica-Bold');
+
+    taxRows.forEach((row, idx) => {
+
+      const rowY = yPos + (idx * taxRowHeight);
+
+      doc.rect(
+        taxTableLeft,
+        rowY,
+        taxTableWidth,
+        taxRowHeight
+      ).stroke();
+
+      doc.text(row[0], taxTableLeft + 5, rowY + 5);
+
+      doc.text(
+        formatIndianCurrency(row[1]),
+        taxTableLeft + 100,
+        rowY + 5,
+        {
+          width: 90,
+          align: 'right'
+        }
+      );
+    });
+
+    // GRAND TOTAL
+    const grandTotalY =
+      yPos + (taxRows.length * taxRowHeight);
+
+    doc.rect(
+      taxTableLeft,
+      grandTotalY,
+      taxTableWidth,
+      20
+    ).stroke();
+
+    doc.fontSize(10).font('Helvetica-Bold');
+
+    doc.text(
+      'Grand Total Rs',
+      taxTableLeft + 5,
+      grandTotalY + 5
+    );
+
+    doc.text(
+      formatIndianCurrency(
+        billData.totals.grandTotal
+      ),
+      taxTableLeft + 100,
+      grandTotalY + 5,
+      {
+        width: 90,
+        align: 'right'
+      }
+    );
+
+    // =========================================
+    // AMOUNT IN WORDS
+    // =========================================
+
+    const amountWordsY = grandTotalY + 30;
+
+    doc.moveTo(40, amountWordsY)
+      .lineTo(555, amountWordsY)
+      .stroke();
+
+    doc.fontSize(9).font('Helvetica');
+
+    doc.text(
+      `Amount in Words: ${billData.amountInWords}`,
+      50,
+      amountWordsY + 8,
+      {
+        width: 450
+      }
+    );
+
+    doc.moveTo(40, amountWordsY + 25)
+      .lineTo(555, amountWordsY + 25)
+      .stroke();
+
+    // =========================================
+    // TERMS
+    // =========================================
+
+    const termsY = amountWordsY + 35;
+    doc.fontSize(9).font('Helvetica-Bold').text('Terms & Conditions', 50, termsY);
+    doc.fontSize(8).font('Helvetica').text(`1) Payment by RTGS/NEFT/ Cheque only and to be made in Favor of "${companyInfo.name}" only.`, 50, termsY + 13);
+
+    // Horizontal divider line
+    doc.moveTo(40, termsY + 30).lineTo(555, termsY + 30).stroke();
+
+    // Bank details - Left side
+    doc.fontSize(9).font('Helvetica-Bold').text('Bank NEFT/RTGS Details:', 50, termsY + 40);
+    doc.fontSize(8).font('Helvetica');
+    doc.text('Bank Name', 50, termsY + 55);
+    doc.text(`:- ${companyInfo.bankName}`, 140, termsY + 55);
+
+    doc.text('Bank Account No.', 50, termsY + 68);
+    doc.text(`:- ${companyInfo.accountNo}`, 140, termsY + 68);
+
+    doc.text('IFSC Code', 50, termsY + 81);
+    doc.text(`:- ${companyInfo.ifsc}`, 140, termsY + 81);
+    doc.text('(All digits are "Zero")', 153, termsY + 93);
+
+    doc.text('Branch Name', 50, termsY + 106);
+    doc.text(`:- ${companyInfo.branch}`, 140, termsY + 106);
+
+    doc.text('PAN No.', 50, termsY + 119);
+    doc.text(`:- ${companyInfo.pan}`, 140, termsY + 119);
+
+    // GST Details box
+    doc.fontSize(9).font('Helvetica-Bold').text('GST DETAILS', 50, termsY + 140);
+    doc.fontSize(8).font('Helvetica');
+    doc.text('GSTIN', 50, termsY + 155);
+    doc.text(`:- ${companyInfo.gstin}`, 140, termsY + 155);
+
+    // Signature - Right side
+    doc.fontSize(9).font('Helvetica').text(`For ${companyInfo.name}`, 380, termsY + 55);
+
+    // Add signature image if exists (company-specific)
+    const signaturePath = path.join(__dirname, `../uploads/signature-${companyId}.png`);
+    if (fs.existsSync(signaturePath)) {
+      doc.image(signaturePath, 400, termsY + 75, { width: 80, height: 50 });
+    }
+
+    doc.end();
   } catch (error) {
     console.error('PDF generation error:', error);
     res.status(500).json({ error: 'Failed to generate PDF' });
