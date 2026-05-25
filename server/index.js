@@ -140,7 +140,7 @@ app.post('/api/auth/register', isAuthenticated, async (req, res) => {
     db.run(
       'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
       [username, hash, role || 'user'],
-      function(err) {
+      function (err) {
         if (err) {
           if (err.message.includes('UNIQUE')) {
             return res.status(400).json({ error: 'Username already exists' });
@@ -184,7 +184,7 @@ app.get('/api/companies', isAuthenticated, (req, res) => {
 // Get company info (currently selected or by ID)
 app.get('/api/company', isAuthenticated, (req, res) => {
   const companyId = req.query.id || req.session.selectedCompanyId || 'northWestLogistics';
-  
+
   db.get('SELECT * FROM companies WHERE id = ?', [companyId], (err, row) => {
     if (err) {
       return res.status(500).json({ error: 'Database error' });
@@ -200,7 +200,7 @@ app.get('/api/company', isAuthenticated, (req, res) => {
 // Select company
 app.post('/api/company/select', isAuthenticated, (req, res) => {
   const { companyId } = req.body;
-  
+
   db.get('SELECT * FROM companies WHERE id = ?', [companyId], (err, row) => {
     if (err) {
       return res.status(500).json({ error: 'Database error' });
@@ -217,17 +217,17 @@ app.post('/api/company/select', isAuthenticated, (req, res) => {
 app.put('/api/company', isAuthenticated, (req, res) => {
   const companyId = req.session.selectedCompanyId || 'northWestLogistics';
   const { name, ward, district, state, pinCode, gstin, pan, email, contactPerson, contactNo, bankName, accountNo, ifsc, branch } = req.body;
-  
+
   db.run(
     `UPDATE companies SET name = ?, ward = ?, district = ?, state = ?, pinCode = ?, gstin = ?, pan = ?, email = ?, 
      contactPerson = ?, contactNo = ?, bankName = ?, accountNo = ?, ifsc = ?, branch = ?, updated_at = CURRENT_TIMESTAMP 
      WHERE id = ?`,
     [name, ward, district, state, pinCode, gstin, pan, email, contactPerson, contactNo, bankName, accountNo, ifsc, branch, companyId],
-    function(err) {
+    function (err) {
       if (err) {
         return res.status(500).json({ error: 'Database error' });
       }
-      
+
       db.get('SELECT * FROM companies WHERE id = ?', [companyId], (err, row) => {
         if (err) {
           return res.status(500).json({ error: 'Database error' });
@@ -256,11 +256,11 @@ app.get('/api/customers', isAuthenticated, (req, res) => {
 app.post('/api/customers', isAuthenticated, (req, res) => {
   const { name, gstin, address, contactPerson, contactNo } = req.body;
   const id = Date.now().toString();
-  
+
   db.run(
     'INSERT INTO customers (id, name, gstin, address, contactPerson, contactNo) VALUES (?, ?, ?, ?, ?, ?)',
     [id, name, gstin, address, contactPerson, contactNo],
-    function(err) {
+    function (err) {
       if (err) {
         return res.status(500).json({ error: 'Database error' });
       }
@@ -272,11 +272,11 @@ app.post('/api/customers', isAuthenticated, (req, res) => {
 // Update customer
 app.put('/api/customers/:id', isAuthenticated, (req, res) => {
   const { name, gstin, address, contactPerson, contactNo } = req.body;
-  
+
   db.run(
     'UPDATE customers SET name = ?, gstin = ?, address = ?, contactPerson = ?, contactNo = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
     [name, gstin, address, contactPerson, contactNo, req.params.id],
-    function(err) {
+    function (err) {
       if (err) {
         return res.status(500).json({ error: 'Database error' });
       }
@@ -290,7 +290,7 @@ app.put('/api/customers/:id', isAuthenticated, (req, res) => {
 
 // Delete customer
 app.delete('/api/customers/:id', isAuthenticated, (req, res) => {
-  db.run('DELETE FROM customers WHERE id = ?', [req.params.id], function(err) {
+  db.run('DELETE FROM customers WHERE id = ?', [req.params.id], function (err) {
     if (err) {
       return res.status(500).json({ error: 'Database error' });
     }
@@ -304,7 +304,7 @@ app.delete('/api/customers/:id', isAuthenticated, (req, res) => {
 // Upload signature
 app.post('/api/upload-signature', isAuthenticated, upload.single('signature'), (req, res) => {
   if (req.file) {
-    res.json({ 
+    res.json({
       message: 'Signature uploaded successfully',
       filename: req.file.filename,
       path: `/uploads/${req.file.filename}`
@@ -318,15 +318,15 @@ app.post('/api/upload-signature', isAuthenticated, upload.single('signature'), (
 const formatIndianCurrency = (num) => {
   const numStr = parseFloat(num).toFixed(2);
   const [integerPart, decimalPart] = numStr.split('.');
-  
+
   // Indian numbering: last 3 digits, then groups of 2
   let lastThree = integerPart.substring(integerPart.length - 3);
   const otherNumbers = integerPart.substring(0, integerPart.length - 3);
-  
+
   if (otherNumbers !== '') {
     lastThree = ',' + lastThree;
   }
-  
+
   const formatted = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree;
   return formatted + '.' + decimalPart;
 };
@@ -356,7 +356,7 @@ app.post('/api/generate-bill', isAuthenticated, async (req, res) => {
   try {
     const billData = req.body;
     const companyId = req.session.selectedCompanyId || 'northWestLogistics';
-    
+
     // Get company info from database
     const companyInfo = await getCompanyInfo(companyId);
     if (!companyInfo) {
@@ -371,9 +371,9 @@ app.post('/api/generate-bill', isAuthenticated, async (req, res) => {
             reject(err);
             return;
           }
-          
+
           const nextBillNumber = (row?.last_bill_number || 0) + 1;
-          
+
           db.run(
             'UPDATE bill_counter SET last_bill_number = ?, updated_at = CURRENT_TIMESTAMP WHERE company_id = ?',
             [nextBillNumber, companyId],
@@ -406,12 +406,12 @@ app.post('/api/generate-bill', isAuthenticated, async (req, res) => {
         req.session.username
       ]
     );
-    
+
     const doc = new PDFDocument({ margin: 40, size: 'A4' });
-    
+
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=bill-${billData.billNo}.pdf`);
-    
+
     doc.pipe(res);
 
     // Top border
@@ -431,56 +431,103 @@ app.post('/api/generate-bill', isAuthenticated, async (req, res) => {
     // Header - Right side (Bill Of Supply or Tax Invoice based on GST type)
     const headerText = (billData.gstType === 'nogst') ? 'Bill Of Supply' : 'Tax Invoice';
     doc.fontSize(16).font('Helvetica-Bold').text(headerText, 380, 50);
-    
+
     // Horizontal line after header
     doc.moveTo(40, 150).lineTo(555, 150).stroke();
-    
+
     // Combined Customer and Bill details box
     const detailsBoxTop = 155;
     doc.rect(40, detailsBoxTop, 515, 95).stroke();
-    
+
     // Vertical divider line (middle)
     doc.moveTo(297.5, detailsBoxTop).lineTo(297.5, detailsBoxTop + 95).stroke();
-    
+
     // LEFT SIDE - Customer Details (50%)
-    doc.fontSize(8).font('Helvetica-Bold');
-    doc.text('Customer Name:', 50, detailsBoxTop + 10);
-    doc.font('Helvetica').text(billData.customer.name, 135, detailsBoxTop + 10, { width: 150 });
-    
-    doc.font('Helvetica-Bold').text('Customer GSTIN:', 50, detailsBoxTop + 22);
-    doc.font('Helvetica').text(billData.customer.gstin, 135, detailsBoxTop + 22, { width: 150 });
-    
-    doc.font('Helvetica-Bold').text('Address:', 50, detailsBoxTop + 34);
-    doc.font('Helvetica').text(billData.customer.address, 135, detailsBoxTop + 34, { width: 150, lineGap: 2 });
-    
-    doc.font('Helvetica-Bold').text('Contact Person:', 50, detailsBoxTop + 60);
-    doc.font('Helvetica').text(billData.customer.contactPerson, 135, detailsBoxTop + 60, { width: 150 });
-    
-    doc.font('Helvetica-Bold').text('Contact No:', 50, detailsBoxTop + 72);
-    doc.font('Helvetica').text(billData.customer.contactNo, 135, detailsBoxTop + 72, { width: 150 });
-    
+
+    let currentY = detailsBoxTop + 10;
+
+    doc.fontSize(8);
+
+    // Customer Name
+    doc.font('Helvetica-Bold').text('Customer Name:', 50, currentY);
+
+    doc.font('Helvetica').text(
+      billData.customer.name,
+      135,
+      currentY,
+      { width: 150 }
+    );
+
+    // Move Y dynamically after wrapped text
+    currentY = doc.y + 8;
+
+    // GSTIN
+    doc.font('Helvetica-Bold').text('Customer GSTIN:', 50, currentY);
+
+    doc.font('Helvetica').text(
+      billData.customer.gstin,
+      135,
+      currentY,
+      { width: 150 }
+    );
+
+    currentY = doc.y + 8;
+
+    // Address
+    doc.font('Helvetica-Bold').text('Address:', 50, currentY);
+
+    doc.font('Helvetica').text(
+      billData.customer.address,
+      135,
+      currentY,
+      { width: 150, lineGap: 2 }
+    );
+
+    currentY = doc.y + 8;
+
+    // Contact Person
+    doc.font('Helvetica-Bold').text('Contact Person:', 50, currentY);
+
+    doc.font('Helvetica').text(
+      billData.customer.contactPerson,
+      135,
+      currentY,
+      { width: 150 }
+    );
+
+    currentY = doc.y + 8;
+
+    // Contact No
+    doc.font('Helvetica-Bold').text('Contact No:', 50, currentY);
+
+    doc.font('Helvetica').text(
+      billData.customer.contactNo,
+      135,
+      currentY,
+      { width: 150 }
+    );
     // RIGHT SIDE - Bill Details (50%)
     doc.fontSize(8).font('Helvetica-Bold');
     doc.text('Bill No:', 310, detailsBoxTop + 10);
     doc.font('Helvetica').text(billData.billNo, 430, detailsBoxTop + 10);
-    
+
     doc.font('Helvetica-Bold').text('Bill Date:', 310, detailsBoxTop + 22);
     doc.font('Helvetica').text(billData.billDate, 430, detailsBoxTop + 22);
-    
+
     doc.font('Helvetica-Bold').text('Contact Person:', 310, detailsBoxTop + 34);
     doc.font('Helvetica').text(companyInfo.contactPerson, 430, detailsBoxTop + 34, { width: 115 });
-    
+
     doc.font('Helvetica-Bold').text('Contact No:', 310, detailsBoxTop + 46);
     doc.font('Helvetica').text(companyInfo.contactNo, 430, detailsBoxTop + 46);
-    
+
     // Bottom row - Tax and Place of Supply
     const bottomRowY = detailsBoxTop + 95;
     doc.rect(40, bottomRowY, 515, 20).stroke();
     doc.moveTo(297.5, bottomRowY).lineTo(297.5, bottomRowY + 20).stroke();
-    
+
     doc.font('Helvetica').text('Tax is payable on Reverse Charge (Y/N):', 50, bottomRowY + 6);
     doc.font('Helvetica-Bold').text('No', 200, bottomRowY + 6);
-    
+
     doc.font('Helvetica').text('Place of Supply', 310, bottomRowY + 6);
     doc.font('Helvetica-Bold').text(billData.placeOfSupply || '', 400, bottomRowY + 6);
 
@@ -501,13 +548,13 @@ app.post('/api/generate-bill', isAuthenticated, async (req, res) => {
       { text: 'Other Charges (Rs.)', width: 32 },
       { text: 'Amount (Rs.)', width: 51 }
     ];
-    
+
     // Draw table header box
     doc.rect(40, tableTop, 515, 35).stroke();
-    
+
     let xPos = 40;
     doc.fontSize(6).font('Helvetica-Bold');
-    
+
     tableHeaders.forEach((header, i) => {
       // Draw vertical lines
       doc.moveTo(xPos, tableTop).lineTo(xPos, tableTop + 35).stroke();
@@ -520,7 +567,7 @@ app.post('/api/generate-bill', isAuthenticated, async (req, res) => {
     let yPos = tableTop + 35;
     doc.font('Helvetica').fontSize(7);
     const rowHeight = 22;
-    
+
     billData.items.forEach((item, index) => {
       xPos = 40;
       const rowData = [
@@ -538,10 +585,10 @@ app.post('/api/generate-bill', isAuthenticated, async (req, res) => {
         { text: item.otherCharges || '0', width: 32 },
         { text: item.amount, width: 51 }
       ];
-      
+
       // Draw row border
       doc.rect(40, yPos, 515, rowHeight).stroke();
-      
+
       rowData.forEach((data, i) => {
         // Draw vertical lines
         doc.moveTo(xPos, yPos).lineTo(xPos, yPos + rowHeight).stroke();
@@ -551,7 +598,7 @@ app.post('/api/generate-bill', isAuthenticated, async (req, res) => {
       doc.moveTo(xPos, yPos).lineTo(xPos, yPos + rowHeight).stroke(); // Last vertical line
       yPos += rowHeight;
     });
-    
+
     // Remarks row
     doc.rect(40, yPos, 515, 20).stroke();
     doc.fontSize(8).font('Helvetica-Bold');
@@ -565,23 +612,23 @@ app.post('/api/generate-bill', isAuthenticated, async (req, res) => {
     const taxTableLeft = 360;
     const taxTableWidth = 195;
     const taxRowHeight = 18;
-    
+
     // Total taxable value row with borders
     doc.rect(taxTableLeft, yPos, taxTableWidth, taxRowHeight).stroke();
     doc.fontSize(9).font('Helvetica-Bold');
     doc.text('Total taxable value of supply', taxTableLeft + 5, yPos + 5);
     doc.text(formatIndianCurrency(billData.totals.taxableValue), taxTableLeft + 100, yPos + 5, { width: 90, align: 'right' });
-    
+
     // SGST row with borders - always show
     doc.rect(taxTableLeft, yPos + taxRowHeight, taxTableWidth, taxRowHeight).stroke();
     doc.text('SGST @ 9%', taxTableLeft + 5, yPos + taxRowHeight + 5);
     doc.text(formatIndianCurrency(billData.totals.sgst || 0), taxTableLeft + 100, yPos + taxRowHeight + 5, { width: 90, align: 'right' });
-    
+
     // CGST row with borders - always show
     doc.rect(taxTableLeft, yPos + (2 * taxRowHeight), taxTableWidth, taxRowHeight).stroke();
     doc.text('CGST @ 9%', taxTableLeft + 5, yPos + (2 * taxRowHeight) + 5);
     doc.text(formatIndianCurrency(billData.totals.cgst || 0), taxTableLeft + 100, yPos + (2 * taxRowHeight) + 5, { width: 90, align: 'right' });
-    
+
     // IGST row with borders - always show
     doc.rect(taxTableLeft, yPos + (3 * taxRowHeight), taxTableWidth, taxRowHeight).stroke();
     doc.text('IGST @ 18%', taxTableLeft + 5, yPos + (3 * taxRowHeight) + 5);
@@ -596,11 +643,11 @@ app.post('/api/generate-bill', isAuthenticated, async (req, res) => {
 
     // Line above Amount in Words
     doc.moveTo(40, grandTotalY + 30).lineTo(555, grandTotalY + 30).stroke();
-    
+
     // Amount in words
     doc.fontSize(9).font('Helvetica');
     doc.text(`Amount in Words: ${billData.amountInWords}`, 50, grandTotalY + 38);
-    
+
     // Line below Amount in Words
     doc.moveTo(40, grandTotalY + 55).lineTo(555, grandTotalY + 55).stroke();
 
@@ -617,20 +664,20 @@ app.post('/api/generate-bill', isAuthenticated, async (req, res) => {
     doc.fontSize(8).font('Helvetica');
     doc.text('Bank Name', 50, termsY + 55);
     doc.text(`:- ${companyInfo.bankName}`, 140, termsY + 55);
-    
+
     doc.text('Bank Account No.', 50, termsY + 68);
     doc.text(`:- ${companyInfo.accountNo}`, 140, termsY + 68);
-    
+
     doc.text('IFSC Code', 50, termsY + 81);
     doc.text(`:- ${companyInfo.ifsc}`, 140, termsY + 81);
     doc.text('(All digits are "Zero")', 153, termsY + 93);
-    
+
     doc.text('Branch Name', 50, termsY + 106);
     doc.text(`:- ${companyInfo.branch}`, 140, termsY + 106);
-    
+
     doc.text('PAN No.', 50, termsY + 119);
     doc.text(`:- ${companyInfo.pan}`, 140, termsY + 119);
-    
+
     // GST Details box
     doc.fontSize(9).font('Helvetica-Bold').text('GST DETAILS', 50, termsY + 140);
     doc.fontSize(8).font('Helvetica');
@@ -639,7 +686,7 @@ app.post('/api/generate-bill', isAuthenticated, async (req, res) => {
 
     // Signature - Right side
     doc.fontSize(9).font('Helvetica').text(`For ${companyInfo.name}`, 380, termsY + 55);
-    
+
     // Add signature image if exists (company-specific)
     const signaturePath = path.join(__dirname, `../uploads/signature-${companyId}.png`);
     if (fs.existsSync(signaturePath)) {
