@@ -384,7 +384,7 @@ const BillGenerator = () => {
         </Grid>
 
         {/* Customer Details (Auto-filled) */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={15}>
           <TextField
             fullWidth
             label="Customer Name"
